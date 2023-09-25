@@ -1,4 +1,4 @@
-#!/home/juan/Escritorio/COSAS/VA/PRACTICAS/VisionArtificialP1_ProcesadoImagenes/bin/python3
+#!/home/juan/Escritorio/COSAS/VA/PRACTICAS/VisionArtificialP1_ProcesadoImagenes/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
