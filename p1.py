@@ -10,4 +10,4 @@ imagenFinalArray = adjustIntensity(imagenOriginalArray,[0,1],[0.4,0.9])
 
 #Guarda e imprime las imagenes transformadas
 guardarArrayComoImagen(imagenFinalArray, "./images/ImagenModificada.jpg")
-hacerPlot(imagenOriginalArray, imagenFinalArray, nBins=256)
+hacerPlot(imagenOriginalArray, imagenFinalEQArray, nBins=256)

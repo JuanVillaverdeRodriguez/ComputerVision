@@ -78,3 +78,67 @@ plt.show()
 #     if data.mode != 'RGB':
 #         new_p = data.convert('RGB')
 #         new_p.save('./images/PeepoModificado.jpg')
+
+
+tam = 50
+img1 = np.arange(0, tam*tam, 1, np.float64)
+img1 = np.reshape(img1, [tam, tam])
+
+for height in range(tam):
+    for widht in range(tam):
+        img1[height][widht] = 0
+
+img1[25][25] = 1
+
+tam = 11
+kernel2 = np.arange(0, tam*tam, 1, np.float64)
+kernel2 = np.reshape(kernel2, [tam, tam])
+
+for height in range(tam):
+    for widht in range(tam):
+        kernel2[height][widht] = 0
+
+kernel2[5][5] = 1
+
+#Kernel 4x3
+#kernel = crearKernel([[0,1,0], [1,1,1], [0,1,0], [1,1,1]])
+
+#Kernel 3x3
+#kernel = crearKernel([[0,1,0], [1,1,1], [0,1,0]])
+
+#Kernel 4x4
+#kernel = crearKernel([[0,1,0,1], [1,1,1,1], [0,1,0,1], [1,1,1,1]])
+
+#Kernel 4x5
+#kernel = crearKernel([[0,1,0,1,1], [1,1,1,1,1], [0,1,0,1,1], [1,1,1,1,1]])
+
+#Kernel 5x4
+#kernel = crearKernel([[0,1,0,1], [1,1,1,1], [0,1,0,1], [1,1,1,1], [1,1,1,1]])
+
+#kernel 7x7
+#kernel = crearKernel([[0,1,0,1,1,1,1], [1,1,1,1,1,1,1], [0,1,0,1,1,1,1], [1,1,1,1,1,1,1], [1,1,1,1,1,1,1], [1,1,1,1,1,1,1], [1,1,1,1,1,1,1]])
+
+#kernel 7x6
+#kernel = crearKernel([[0,1,0,1,1,1], [1,1,1,1,1,1], [0,1,0,1,1,1], [1,1,1,1,1,1], [1,1,1,1,1,1], [1,1,1,1,1,1], [1,1,1,1,1,1]])
+
+#kernel 6x7
+#kernel = crearKernel([[0,1,0,1,1,1,1], [1,1,1,1,1,1,1], [0,1,0,1,1,1,1], [1,1,1,1,1,1,1], [1,1,1,1,1,1,1], [1,1,1,1,1,1,1]])
+
+
+#Kernel 6x5
+#kernel = crearKernel([[0,1,0,1,1], [1,1,1,1,1], [0,1,0,1,1], [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1]])
+
+#Kernel 2x1
+#kernel = crearKernel([[1], [1]])
+
+#print(kernel)
+
+tam = 10
+imagenOriginal = np.arange(0, tam*tam, 1, np.uint8)
+imagenOriginal = np.reshape(imagenOriginal, [tam, tam])
+
+for height in range(tam):
+    for widht in range(tam):
+        imagenOriginal[height][widht] = 0
+
+imagenOriginal[5][5] = 255

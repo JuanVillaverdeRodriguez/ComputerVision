@@ -1,30 +1,27 @@
 from funciones import *
+import math
 
-def convolucionar(inImage, kernel):
-    kernelHeight, kernelWidht = kernel.shape
+'''
+#Filter image
+imagenOriginal = readImageAsGrayscale('./images/FondoRojo.jpg')
+kernel = crearKernel([[0,0,1], [0,1,0], [0,0,1]])
 
-    a = (kernelHeight - 1) / 2
-    b = (kernelWidht - 1) / 2
-    s = -a
-    t = -b
-    
-    #for x in range(a):
-        #for y in range(b):
-            
+imagenResultadoArray = filterImage(imagenOriginal, kernel)
+hacerPlot(imagenOriginal, imagenResultadoArray, nBins=256)
 
-def filterImage(inImage, kernel):
-    print("AYUDA")
+#Kernel gaussiano 1D
+kernelGauss1D = gaussKernel1D(0.125)
+print(kernelGauss1D)
 
-def crearKernel(inLista):
-    h, w = inLista.shape
-    kernel = np.arange(0, h*w, 1, np.uint8)
-    kernel = np.reshape(kernel, inLista.shape)
-    return kernel
+#Kernel gaussiano 2D
+# imagenOriginal = readImageAsGrayscale('./images/FondoRojo.jpg')
+imagenOriginal = readImageAsGrayscale('./images/punto2.jpg')
 
-#Lee la imagen
-imagenOriginalArray = readImageAsGrayscale('./images/FondoRojo.jpg')
-print(imagenOriginalArray.shape)
+imagenModificada = gaussianFilter(imagenOriginal, 0.625)
 
-#Define el kernel como un NDArray
-kernel = crearKernel([[1,1,1],[1,1,1],[1,1,1]])
+hacerPlot(imagenOriginal, imagenModificada, nBins=256)
+'''
 
+imagenOriginal = readImageAsGrayscale('./images/punto2.jpg')
+imagenModificada = medianFilter(imagenOriginal, 5)
+hacerPlot(imagenOriginal, imagenModificada, nBins=256)

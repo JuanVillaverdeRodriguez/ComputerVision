@@ -1,0 +1,2 @@
+el gaussian filter 1D podria devolver un NDArray [[1,1,1,1,1,]] en lugar de [1,1,1,1,1]? Facilitaria hacer el gaussian filter 2D
+el filtro mediana funciona bien? deberia incluirse el pixel que se esta evaluando en la ventana de mediana

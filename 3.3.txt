@@ -1,0 +1,59 @@
+Trabajamos con imagenes binarias. El valor de intensidad 0 es el fondo el 1 es la forma (O al reves no se)
+
+Elemento estructurante. (Ej. un circulo, lo que este dentro del circulo esta a 1 y los pixeles de fuera a 0)
+Operar con este Elemento sobre una imagen, rollo convolucion, vamos transaldadon el elemento sobre la imagen y vamos convolucionando, cuando 
+el elemento llegue a la imagen ocurre cosas.
+Si todos los elementos (del elemento esctruante (Kernel) y la forma de la imagen) coincicen en 1 entonces se produce el efecto erosion, el resultado se puede poner en el centro o en cualquier posicion que se desee, del kernel
+Dependiendo de donde se ponga el centro, la imagen se movera un pixel pa algun lado
+Dilatancion => Algun pixel valor 1 del kernel coincide con algun pixel valor 1 en la imagen
+
+Hacer opening es aplicar primero erosion y despues Dilatancion => La apertura haria que las pneinsulas o pixeles que sobresalgan de una imagen, primero se erosionen y despues no vuelvan a aparecer con la dilatacon
+Hacer cierre es al reves, primero Dilatancion y despues erosion => Lo que se haya conectado despues al erosionar no se abrira, si sobrevive si que se volvera a abrir
+
+Operador prewit => Derivada, si tenemos kernel 3x3 media de las 3 derivadas
+Operador sovel => Igual que preweit, pero hace media ponderada
+Operador roberts => Hace derivada diagonal
+
+def filterImage(inImage, kernel):
+    kernelHeight, kernelWidht = kernel.shape
+    imageHeight, imageWidht = inImage.shape
+
+    #COMPROBAR SI PARA KERNELS 2x2 EL ROUND LO HACE BIEN
+    a = round((kernelHeight - 1) / 2)
+    b = round((kernelWidht - 1) / 2)
+    
+    #for s in range(a+2):
+       #print(s-1)
+
+    #resultingImageArray = np.arange(0, h*w, 1, np.uint8)
+    #resultingImageArray = np.reshape(resultingImageArray, [imageHeight-2, imageWidht-2])
+    resultingImageArray = inImage
+    for h in range(imageHeight):
+        for w in range(imageWidht):
+            if ((w >= 2) and (h >= 2)):
+                if ((h < imageHeight-2) and (w < imageWidht-2)):
+                    valorResultante = 0
+                    #print("VALOR: ")
+                    #print(type(valorResultante))
+                    for s in range(a+2):
+                        for t in range(b+2):
+                            #print(inImage[h + (s-1)][w + (t-1)])
+                            #print("asda")
+                            #time.sleep(1)
+                            # print("inImage: ")
+                            # print(inImage[h + (s-1)][w + (t-1)])
+                            # print("kernel: ")
+                            # print(s)
+                            # print(t)
+                            # print(kernel[s][t])
+                            #print((inImage[h + (s-1)][w + (t-1)]))
+                            #print((kernel[(s)][t]))
+                            valorResultante += ((inImage[h + (s-1)][w + (t-1)])*(kernel[(s)][t]))
+                            #print("VALOR RESULTANTE MULTIPLICANCOON: ")
+                            #print(valorResultante)
+                    if (valorResultante < 0):
+                        resultingImageArray[h][w] = 0
+                    elif (valorResultante > 255):
+                        resultingImageArray[h][w] = 255
+                    else:
+                        resultingImageArray[h][w] = valorResultante
