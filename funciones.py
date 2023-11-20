@@ -464,6 +464,33 @@ def gradientImage(inImage, operator):
 
     return gx, gy
 
+def LoG (inImage, sigma):
+    # Convolucionar inImage con el kernel gausiano
+    imgConvolGaussianKernel = gaussianFilter(inImage, 1.5)
+
+    # Convolucionar imgConvolGaussianKernel con diferencias finitas en x dos veces (2º derivada en x)
+    kernel_x = crearKernel([[-1, 0, 1]])
+    gx1 = filterImage(imgConvolGaussianKernel, kernel_x)
+    gx2 = filterImage(gx1, kernel_x)
+
+    # Convolucionar imgConvolGaussianKernel con diferencias finitas en x dos veces (2º derivada en x)
+    kernel_y = crearKernel([[-1], [0], [1]])
+    gy1 = filterImage(imgConvolGaussianKernel, kernel_y)
+    gy2 = filterImage(gy1, kernel_y)
+
+
+    # Sumar las dos derivadas segundas (gx2, gy2) en una unica imagen
+    imageHeight, imageWidth = gx2.shape
+
+    imagenResultado = np.arange(0, imageHeight*imageWidth, 1, np.float64)
+    imagenResultado = np.reshape(imagenResultado, [imageHeight, imageWidth])
+
+
+    for x in range(imageHeight):
+        for y in range(imageWidth):
+            imagenResultado[x][y] = gx2[x][y] + gy2[x][y]
+
+    return imagenResultado
 
 ##############################################################
 ##############################################################
