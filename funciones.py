@@ -6,25 +6,6 @@ import math
 import os
 
 #Lee y convierte a escala de grises la imagen pasada por parametro
-# def readImageAsGrayscale(inImageRuta):
-    
-#     image = ski.io.imread(inImageRuta)
-#     if len(image.shape)>=3:
-#         image = ski.color.rgb2gray(image)
-#     return ski.util.img_as_ubyte(image)
-#     #return ski.util.img_as_float64(image)
-
-
-# def readImageAsGrayscale(inImageRuta):
-#     try:
-#         with im.open(inImageRuta) as img:
-#             img = img.convert('L')  # Convierte la imagen a escala de grises
-#             image = np.array(img)  # Convierte la imagen en un array NumPy
-
-#         return ski.img_as_ubyte(image)
-#     except Exception as e:
-#         print(f"Error al cargar la imagen: {str(e)}")
-
 def readImageAsGrayscale(inImageRuta):
     with im.open(inImageRuta) as img:
         img = img.convert('L')  # Convierte la imagen a escala de grises
@@ -179,10 +160,11 @@ def gaussKernel1D(sigma):
 
 def filterImage(inImage, kernel):
     outImage =  np.copy(inImage)
+
     kernel = np.rot90(kernel,2)
     imageHeight, imageWidht = inImage.shape
     kernelHeight, kernelWidht = kernel.shape
-    
+
     resultingImageArray = np.copy(inImage)
     
     centrokernelHeight = math.floor(kernelHeight/2)+1
@@ -249,12 +231,490 @@ def medianFilter(inImage, filterSize):
             posX = w+filterSize
             
             vecindario = (paddedImage[posY-(centroKernel-1):posY + limite, posX-(centroKernel-1):posX + limite])
-            
-            # print("AHORA ESTOY EN: ")
-            # print(posY)
-            # print(posX)
-            # print(vecindario)
-            # print(np.median(vecindario))
+
             resultingImageArray[h][w] = np.median(vecindario)
 
     return resultingImageArray
+
+################################################################################
+####################### FUCIONES OPERADORES MORFOLOGICOS #######################
+################################################################################
+def crearEE(EE):
+    return crearKernel(EE)
+
+def erode(inImage, SE, center=[]):
+    imageHeight, imageWidht = inImage.shape
+    SEHeight, SEWidht = SE.shape
+
+    kernelHeight, kernelWidht = SE.shape
+
+    resultingImageArray = np.copy(inImage)
+    if (len(center) == 0):
+        centrokernelHeight = math.floor(kernelHeight/2)+1
+        centrokernelWidht = math.floor(kernelWidht/2)+1
+    else:
+        centrokernelHeight = center[0] +1
+        centrokernelWidht = center[1] +1
+
+
+    if (centrokernelWidht >= kernelHeight):
+        mayor = centrokernelWidht
+    else:
+        mayor = centrokernelHeight
+
+    paddedImage = np.pad(inImage, mayor, mode='constant', constant_values=0)
+
+    #Este bloque sirve para hacer que el trozo de la imagen sobre el que se va a 
+    #realizar el producto escalar tenga las mismas dimensiones que el kernel
+    limiteHeight = centrokernelHeight
+    print(centrokernelHeight)
+    limiteWidht = centrokernelWidht
+    print(centrokernelWidht)
+
+    if (kernelHeight % 2) == 0:
+        limiteHeight = centrokernelHeight-1
+    if (kernelWidht % 2) == 0:
+        limiteWidht = centrokernelWidht-1
+
+    print(paddedImage)
+
+    imagenYKernelCoincidenEnAlgo = False
+    for h in range(imageHeight):
+        for w in range(imageWidht):
+            posY = h+mayor
+            posX = w+mayor
+            print("HOLA")
+            #-centrokernelHeight, limiteHeight
+            for i in range(kernelHeight):
+                if imagenYKernelCoincidenEnAlgo == True:
+                    break
+                for j in range(kernelWidht):
+                    if round(SE[i][j]) != round(paddedImage[posY-(centrokernelHeight-1)+i][posX-(centrokernelWidht-1)+j]):
+                        if (round(SE[i][j]) == 1):
+                            resultingImageArray[h][w] = 0
+                            imagenYKernelCoincidenEnAlgo = True
+
+            if imagenYKernelCoincidenEnAlgo != True:
+                resultingImageArray[h][w] = 1
+            imagenYKernelCoincidenEnAlgo = False    
+                    
+    
+    return resultingImageArray
+
+def dilate(inImage, SE, center=[]):
+    imageHeight, imageWidht = inImage.shape
+    SEHeight, SEWidht = SE.shape
+
+    kernelHeight, kernelWidht = SE.shape
+
+    resultingImageArray = np.copy(inImage)
+    if (len(center) == 0):
+        centrokernelHeight = math.floor(kernelHeight/2)+1
+        centrokernelWidht = math.floor(kernelWidht/2)+1
+    else:
+        centrokernelHeight = center[0] +1
+        centrokernelWidht = center[1] +1
+
+
+    if (centrokernelWidht >= kernelHeight):
+        mayor = centrokernelWidht
+    else:
+        mayor = centrokernelHeight
+
+    paddedImage = np.pad(inImage, mayor, mode='constant', constant_values=0)
+
+    #Este bloque sirve para hacer que el trozo de la imagen sobre el que se va a 
+    #realizar el producto escalar tenga las mismas dimensiones que el kernel
+    limiteHeight = centrokernelHeight
+    print(centrokernelHeight)
+    limiteWidht = centrokernelWidht
+    print(centrokernelWidht)
+
+    if (kernelHeight % 2) == 0:
+        limiteHeight = centrokernelHeight-1
+    if (kernelWidht % 2) == 0:
+        limiteWidht = centrokernelWidht-1
+
+    print(paddedImage)
+
+    imagenYKernelCoincidenEnAlgo = False
+    for h in range(imageHeight):
+        for w in range(imageWidht):
+            posY = h+mayor
+            posX = w+mayor
+            print("HOLA")
+            #-centrokernelHeight, limiteHeight
+            for i in range(kernelHeight):
+                if imagenYKernelCoincidenEnAlgo == True:
+                    break
+                for j in range(kernelWidht):
+                    print("SE i j: ")
+                    print(i)
+                    print(j)
+                    print(round(SE[i][j]))
+                    print("PADDEDIMAGE posY posX: ")
+                    print(posY-(centrokernelHeight-1)+i)
+                    print(posX-(centrokernelWidht-1)+j)
+                    print(round(paddedImage[posY-(centrokernelHeight-1)+i][posX-(centrokernelWidht-1)+j]))
+                    print("---------------------------")
+
+                    if round(SE[i][j]) == round(paddedImage[posY-(centrokernelHeight-1)+i][posX-(centrokernelWidht-1)+j]):
+                        print("NO SON IGUALES")
+                        resultingImageArray[h][w] = 1
+                        imagenYKernelCoincidenEnAlgo = True
+
+            if imagenYKernelCoincidenEnAlgo != True:
+                resultingImageArray[h][w] = 0
+            imagenYKernelCoincidenEnAlgo = False    
+                    
+    
+    return resultingImageArray
+
+def opening(inImage, SE, center=[]):
+    imagenErosionada = erode(inImage, SE, center)
+    imagenDilatada = dilate(imagenErosionada, SE, center)
+    
+    return imagenDilatada
+
+def closing(inImage, SE, center=[]):
+    imagenDilatada = dilate(inImage, SE, center)
+    imagenErosionada = erode(imagenDilatada, SE, center)
+    
+    return imagenErosionada
+    
+def invertirImagen(inImage):
+    inImageCopy = np.copy(inImage)
+    h, w = inImageCopy.shape
+    for y in range(h):
+        for x in range(w):
+            if inImageCopy[y][x] == 0:
+                inImageCopy[y][x] = 1
+            else: inImageCopy[y][x] = 0
+
+    return inImageCopy
+
+def intersect(inImage1, inImage2):
+    inImageCopy = np.copy(inImage1)
+    h, w = inImageCopy.shape
+    for y in range(h):
+        for x in range(w):
+            if inImageCopy[y][x] != inImage2[y][x]:
+                inImageCopy[y][x] = 0
+
+    return inImageCopy
+
+def comprobarPosicionesSE(obSEj, bgSE):
+    h, w = obSEj.shape
+    h2, w2 = bgSE.shape
+
+    if (h != h2 or w != w2):
+        return False
+    
+    for y in range(h):
+        for x in range(w):
+            if obSEj[y][x] == bgSE[y][x]:
+                if obSEj[y][x] == 1:
+                    return False
+
+    return True
+    
+def hit_or_miss(inImage, objSEj, bgSE, center=[]):
+    #Comprobar si hay unos en las mismas posiciones o no
+    if comprobarPosicionesSE(objSEj, bgSE) == False:
+        print("ERROR: Elemento estructurantes incoherentes")
+        return 
+    
+    #Obtener lo que no pertenece a la figura.
+    imagenInvertida = invertirImagen(inImage)
+
+    #Calcular A (inImage) erosinado con objSEj
+    primeraErosion = erode(inImage, objSEj, center)
+
+    #Calcular Ac (imagenInvertida) erosionado con bgSE
+    segundaErosion = erode(imagenInvertida, bgSE, center)
+
+    #Calcular interseccion 
+    interseccion = intersect(primeraErosion, segundaErosion)
+
+    return interseccion
+
+#############################################################################
+####################### FUNCIONES DETECCIÓN DE BORDES #######################
+#############################################################################
+
+def gradientImage(inImage, operator):
+    match operator:
+        case "Roberts":
+            kernel_x = crearKernel([[-1, 0], [0, 1]])
+            kernel_y = crearKernel([[0, -1], [1, 0]])
+        case "CentralDiff":
+            kernel_x = crearKernel([[-1, 0, 1]])
+            kernel_y = crearKernel([[-1], [0], [1]])
+        case "Prewitt":
+            kernel_x = crearKernel([[-1, 0, 1],[-1, 0, 1],[-1, 0, 1]])
+            kernel_y = crearKernel([[-1,-1,-1], [0,0,0], [1,1,1]])
+        case "Sobel":
+            kernel_x = crearKernel([[-1, 0, 1],[-2, 0, 2],[-1, 0, 1]])
+            kernel_y = crearKernel([[-1,-2,-1], [0,0,0], [1,2,1]])
+        case _:
+            print("Operador [" + operator + "] no reconocido")
+
+    gx = filterImage(inImage, kernel_x)
+    gy = filterImage(inImage, kernel_y)
+
+    return gx, gy
+
+
+##############################################################
+##############################################################
+##############################################################
+def imagen_erode_1():
+    tamY = 16
+    tamX = 16
+    imagenOriginal = np.arange(0, tamY*tamX, 1, np.float64)
+    imagenOriginal = np.reshape(imagenOriginal, [tamY, tamX])
+    for height in range(tamY):
+        for widht in range(tamX):
+            imagenOriginal[height][widht] = 0
+            
+    imagenOriginal[2][3] = 1
+    imagenOriginal[2][4] = 1
+    imagenOriginal[2][5] = 1
+
+    imagenOriginal[3][2] = 1
+    imagenOriginal[3][3] = 1
+    imagenOriginal[3][4] = 1
+    imagenOriginal[3][5] = 1
+    imagenOriginal[3][6] = 1
+
+    imagenOriginal[4][2] = 1
+    imagenOriginal[4][3] = 1
+    imagenOriginal[4][4] = 1
+    imagenOriginal[4][5] = 1
+    imagenOriginal[4][6] = 1
+    imagenOriginal[4][11] = 1
+    imagenOriginal[4][12] = 1
+    imagenOriginal[4][13] = 1
+
+    imagenOriginal[5][2] = 1
+    imagenOriginal[5][3] = 1
+    imagenOriginal[5][4] = 1
+    imagenOriginal[5][5] = 1
+    imagenOriginal[5][10] = 1
+    imagenOriginal[5][11] = 1
+    imagenOriginal[5][12] = 1
+    imagenOriginal[5][13] = 1
+
+    imagenOriginal[6][3] = 1
+    imagenOriginal[6][4] = 1
+    imagenOriginal[6][9] = 1
+    imagenOriginal[6][10] = 1
+    imagenOriginal[6][11] = 1
+    imagenOriginal[6][12] = 1
+    imagenOriginal[6][13] = 1
+
+    imagenOriginal[7][8] = 1
+    imagenOriginal[7][9] = 1
+    imagenOriginal[7][10] = 1
+    imagenOriginal[7][11] = 1
+    imagenOriginal[7][12] = 1
+
+    imagenOriginal[8][7] = 1
+    imagenOriginal[8][8] = 1
+    imagenOriginal[8][9] = 1
+    imagenOriginal[8][10] = 1
+    imagenOriginal[8][11] = 1
+
+    imagenOriginal[9][6] = 1
+    imagenOriginal[9][7] = 1
+    imagenOriginal[9][8] = 1
+    imagenOriginal[9][9] = 1
+    imagenOriginal[9][10] = 1
+
+    imagenOriginal[10][5] = 1
+    imagenOriginal[10][6] = 1
+    imagenOriginal[10][7] = 1
+    imagenOriginal[10][8] = 1
+    imagenOriginal[10][9] = 1
+
+    imagenOriginal[11][4] = 1
+    imagenOriginal[11][5] = 1
+    imagenOriginal[11][6] = 1
+    imagenOriginal[11][7] = 1
+    imagenOriginal[11][8] = 1
+
+    imagenOriginal[12][4] = 1
+    imagenOriginal[12][5] = 1
+    imagenOriginal[12][6] = 1
+    imagenOriginal[12][7] = 1
+    imagenOriginal[12][8] = 1
+    imagenOriginal[12][9] = 1
+    imagenOriginal[12][10] = 1
+    imagenOriginal[12][11] = 1
+
+    imagenOriginal[13][4] = 1
+    imagenOriginal[13][5] = 1
+    imagenOriginal[13][6] = 1
+    imagenOriginal[13][7] = 1
+    imagenOriginal[13][8] = 1
+    imagenOriginal[13][9] = 1
+    imagenOriginal[13][10] = 1
+    imagenOriginal[13][11] = 1
+
+    imagenOriginal[14][5] = 1
+    imagenOriginal[14][6] = 1
+    imagenOriginal[14][7] = 1
+    imagenOriginal[14][8] = 1
+    imagenOriginal[14][9] = 1
+    imagenOriginal[14][10] = 1
+
+    return imagenOriginal
+
+def imagen_erode_2():
+    tamY = 7
+    tamX = 7
+    imagenOriginal = np.arange(0, tamY*tamX, 1, np.float64)
+    imagenOriginal = np.reshape(imagenOriginal, [tamY, tamX])
+    for height in range(tamY):
+        for widht in range(tamX):
+            imagenOriginal[height][widht] = 0
+            
+    imagenOriginal[1][3] = 1
+    imagenOriginal[1][4] = 1
+
+    imagenOriginal[2][2] = 1
+    imagenOriginal[2][3] = 1
+    imagenOriginal[2][4] = 1
+    imagenOriginal[2][5] = 1
+
+    imagenOriginal[3][2] = 1
+    imagenOriginal[3][3] = 1
+    imagenOriginal[3][4] = 1
+    imagenOriginal[3][5] = 1
+
+    imagenOriginal[4][3] = 1
+    imagenOriginal[4][4] = 1
+
+    imagenOriginal[5][3] = 1
+
+    return imagenOriginal
+
+def imagen_erode_3():
+    tamY = 16
+    tamX = 16
+    imagenOriginal = np.arange(0, tamY*tamX, 1, np.float64)
+    imagenOriginal = np.reshape(imagenOriginal, [tamY, tamX])
+    for height in range(tamY):
+        for widht in range(tamX):
+            imagenOriginal[height][widht] = 0
+            
+    imagenOriginal[2][8] = 1
+    imagenOriginal[2][9] = 1
+    imagenOriginal[2][10] = 1
+    imagenOriginal[2][11] = 1
+    imagenOriginal[2][12] = 1
+
+    imagenOriginal[3][2] = 1
+    imagenOriginal[3][3] = 1
+    imagenOriginal[3][4] = 1
+    imagenOriginal[3][5] = 1
+    imagenOriginal[3][8] = 1
+    imagenOriginal[3][9] = 1
+    imagenOriginal[3][10] = 1
+    imagenOriginal[3][11] = 1
+    imagenOriginal[3][12] = 1
+    imagenOriginal[3][13] = 1
+
+    imagenOriginal[4][2] = 1
+    imagenOriginal[4][3] = 1
+    imagenOriginal[4][4] = 1
+    imagenOriginal[4][5] = 1
+    imagenOriginal[4][8] = 1
+    imagenOriginal[4][9] = 1
+    imagenOriginal[4][10] = 1
+    imagenOriginal[4][11] = 1
+    imagenOriginal[4][12] = 1
+
+    imagenOriginal[5][1] = 1
+    imagenOriginal[5][2] = 1
+    imagenOriginal[5][3] = 1
+    imagenOriginal[5][4] = 1
+    imagenOriginal[5][5] = 1
+    imagenOriginal[5][6] = 1
+    imagenOriginal[5][7] = 1
+    imagenOriginal[5][8] = 1
+    imagenOriginal[5][9] = 1
+    imagenOriginal[5][10] = 1
+    imagenOriginal[5][11] = 1
+    imagenOriginal[5][12] = 1
+
+    imagenOriginal[6][2] = 1
+    imagenOriginal[6][3] = 1
+    imagenOriginal[6][4] = 1
+    imagenOriginal[6][5] = 1
+    imagenOriginal[6][6] = 1
+    imagenOriginal[6][7] = 1
+    imagenOriginal[6][8] = 1
+    imagenOriginal[6][9] = 1
+    imagenOriginal[6][10] = 1
+    imagenOriginal[6][11] = 1
+
+    imagenOriginal[7][2] = 1
+    imagenOriginal[7][3] = 1
+    imagenOriginal[7][9] = 1
+    imagenOriginal[7][10] = 1
+    imagenOriginal[7][11] = 1
+    imagenOriginal[7][12] = 1
+
+    imagenOriginal[8][2] = 1
+    imagenOriginal[8][3] = 1
+    imagenOriginal[8][9] = 1
+    imagenOriginal[8][10] = 1
+    imagenOriginal[8][11] = 1
+    imagenOriginal[8][12] = 1
+
+    imagenOriginal[9][3] = 1
+    imagenOriginal[9][9] = 1
+    imagenOriginal[9][10] = 1
+    imagenOriginal[9][11] = 1
+    imagenOriginal[9][12] = 1
+
+    imagenOriginal[10][2] = 1
+    imagenOriginal[10][3] = 1
+    imagenOriginal[10][4] = 1
+    imagenOriginal[10][5] = 1
+    imagenOriginal[10][6] = 1
+    imagenOriginal[10][7] = 1
+    imagenOriginal[10][8] = 1
+    imagenOriginal[10][9] = 1
+    imagenOriginal[10][10] = 1
+    imagenOriginal[10][11] = 1
+
+    imagenOriginal[11][2] = 1
+    imagenOriginal[11][3] = 1
+    imagenOriginal[11][4] = 1
+    imagenOriginal[11][5] = 1
+    imagenOriginal[11][6] = 1
+    imagenOriginal[11][7] = 1
+    imagenOriginal[11][8] = 1
+    imagenOriginal[11][9] = 1
+    imagenOriginal[11][10] = 1
+
+    imagenOriginal[12][2] = 1
+    imagenOriginal[12][3] = 1
+    imagenOriginal[12][4] = 1
+    imagenOriginal[12][5] = 1
+    imagenOriginal[12][6] = 1
+    imagenOriginal[12][7] = 1
+    imagenOriginal[12][8] = 1
+    imagenOriginal[12][9] = 1
+
+    imagenOriginal[13][2] = 1
+    imagenOriginal[13][3] = 1
+    imagenOriginal[13][4] = 1
+    imagenOriginal[13][5] = 1
+    imagenOriginal[13][6] = 1
+    imagenOriginal[13][7] = 1
+    imagenOriginal[13][8] = 1
+
+    return imagenOriginal

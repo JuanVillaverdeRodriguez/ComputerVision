@@ -22,6 +22,11 @@ imagenModificada = gaussianFilter(imagenOriginal, 0.625)
 hacerPlot(imagenOriginal, imagenModificada, nBins=256)
 '''
 
+#Filtro de medianas
+# imagenOriginal = readImageAsGrayscale('./images/punto2.jpg')
+# imagenModificada = medianFilter(imagenOriginal, 5)
+
 imagenOriginal = readImageAsGrayscale('./images/punto2.jpg')
-imagenModificada = medianFilter(imagenOriginal, 5)
+kernel = crearKernel([[0,0,1], [0,1,0], [0,0,1]])
+imagenModificada = filterImage(imagenOriginal, kernel)
 hacerPlot(imagenOriginal, imagenModificada, nBins=256)

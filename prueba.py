@@ -142,3 +142,29 @@ for height in range(tam):
         imagenOriginal[height][widht] = 0
 
 imagenOriginal[5][5] = 255
+
+tamY = 5
+tamX = 4
+imagenOriginal = np.arange(0, tamY*tamX, 1, np.float64)
+imagenOriginal = np.reshape(imagenOriginal, [tamY, tamX])
+for height in range(tamY):
+    for widht in range(tamX):
+        imagenOriginal[height][widht] = 0
+imagenOriginal[0][0] = 1
+imagenOriginal[1][0] = 1
+imagenOriginal[2][1] = 1
+imagenOriginal[2][2] = 1
+imagenOriginal[3][1] = 1
+imagenOriginal[4][1] = 1
+
+# elementoEstructurante1 = crearEE([[-1,1,-1],[0,1,1],[0,0,-1]])
+# elementoEstructuranteFondo1 = crearEE([[-1,0,-1],[1,0,0],[1,1,-1]])
+
+# elementoEstructurante2 = crearEE([[-1,1,-1],[1,1,0],[-1,0,0]])
+# elementoEstructuranteFondo2 = crearEE([[-1,0,-1],[0,0,1],[-1,1,1]])
+
+# elementoEstructurante3 = crearEE([[-1,0,0],[1,1,0],[-1,1,-1]])
+# elementoEstructuranteFondo3 = crearEE([[-1,1,1],[0,0,1],[-1,0,-1]])
+
+# elementoEstructurante4 = crearEE([[0,0,-1],[0,1,1],[-1,1,-1]])
+# elementoEstructuranteFondo4 = crearEE([[1,1,-1],[1,0,0],[-1,0,-1]])
