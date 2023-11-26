@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import os
+from skimage import data, filters
 
 #Lee y convierte a escala de grises la imagen pasada por parametro
 def readImageAsGrayscale(inImageRuta):
@@ -36,14 +37,32 @@ def crearHistograma(inImage):
 
     return histograma
 
-def modHist(xy,GminNorm, GmaxNorm, Gmin,Gmax):
+def modHist(xy,Gmin, Gmax, GminNorm,GmaxNorm):
     return (GminNorm + ((GmaxNorm-GminNorm)*(xy-Gmin)/(Gmax-Gmin)))
 
+def getMinMax(inImage):
+    h, w = inImage.shape
+    
+    min = inImage[0][0]
+    max = inImage[0][0]
+    for height in range(h):
+        for widht in range(w):
+            if (inImage[height][widht] <= min): min = inImage[height][widht]
+            if (inImage[height][widht] >= max): max = inImage[height][widht]
+    
+    return [min, max]
+            
 def adjustIntensity(inImage, inRange, outRange):    
     h, w = inImage.shape
 
     Gnorm = np.arange(0, h*w, 1, np.float64)
     Gnorm = np.reshape(Gnorm, inImage.shape)
+    
+    if (inRange == []):
+        inRange = getMinMax(inImage)
+    
+    if (outRange == []):
+        outRange = [0,1]
     
     for height in range(h):
         for widht in range(w):
@@ -466,7 +485,7 @@ def gradientImage(inImage, operator):
 
 def LoG (inImage, sigma):
     # Convolucionar inImage con el kernel gausiano
-    imgConvolGaussianKernel = gaussianFilter(inImage, 1.5)
+    imgConvolGaussianKernel = gaussianFilter(inImage, sigma)
 
     # Convolucionar imgConvolGaussianKernel con diferencias finitas en x dos veces (2º derivada en x)
     kernel_x = crearKernel([[-1, 0, 1]])
