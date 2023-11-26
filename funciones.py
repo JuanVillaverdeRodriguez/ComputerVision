@@ -5,7 +5,11 @@ import matplotlib.pyplot as plt
 import math
 import os
 from skimage import data, filters
+import matplotlib.image
 
+################################################################################
+####################### HISTOGRAMAS: MEJORAS DE CONTRASTE #############################
+################################################################################
 #Lee y convierte a escala de grises la imagen pasada por parametro
 def readImageAsGrayscale(inImageRuta):
     with im.open(inImageRuta) as img:
@@ -14,22 +18,22 @@ def readImageAsGrayscale(inImageRuta):
 
     return ski.img_as_float64(image)   
 
-
 #Crea el histograma de una imagen
-def crearHistograma(inImage):
+def crearHistograma(inImage, nBins):
     h, w = inImage.shape
 
     print(h)
     print(w)
 
     aux = []
-    for x in range(0,256):
+    for x in range(0,nBins+1):
         aux.append([x, 0])
 
     print(len(aux))
     for height in range(h):
         for widht in range(w):
-            aux[inImage[height][widht]][1] += 1
+            print(inImage[height][widht])
+            aux[int(inImage[height][widht])][1] += 1
 
     histograma = []
     for x in aux:
@@ -101,21 +105,25 @@ def modHistAcumulado(histAcumulado, pixel, nBins, h, w):
     return ((histAcumulado[pixel]/(h*w))*nBins)
 
 def guardarArrayComoImagen(arrayEntrada, rutaImagenSalida):
-    # data = im.fromarray(arrayEntrada, mode='L')
-    # data.save(rutaImagenSalida)
-    imagen = im.new("L", (10, 10))
-    imagen.putdata(arrayEntrada.flatten())
-    imagen.save(rutaImagenSalida)
+    #data = im.fromarray(arrayEntrada, mode='L')
+    #data.save(rutaImagenSalida)
+    # h, w = arrayEntrada.shape
+    # imagen = im.new("L", (w, h))
+    # imagen.putdata(arrayEntrada.flatten())
+    # imagen.save(rutaImagenSalida)
+    matplotlib.image.imsave(rutaImagenSalida, arrayEntrada, cmap='gray')
 
-def equalizeIntensity(inImage, nBins=10):
+def equalizeIntensity(inImage, nBins=256):
     h, w = inImage.shape
     
-    Gnorm = np.arange(0, h*w, 1, np.uint8)
+    Gnorm = np.arange(0, h*w, 1, np.float64)
     Gnorm = np.reshape(Gnorm, inImage.shape)
+
+    imagenAjustada = adjustIntensity(inImage, [0, 1], [0, nBins])
     
     #Vector de tamaño h*w que contiene la intensidad de cada pixel
-    arrayPixelesImagen = inImage.flatten()
-    histograma = crearHistograma(inImage)
+    arrayPixelesImagen = imagenAjustada.flatten()
+    histograma = crearHistograma(imagenAjustada, nBins)
 
     histAcumulado = []
     sumatorio = 0
@@ -128,12 +136,15 @@ def equalizeIntensity(inImage, nBins=10):
     for height in range(h):
          for widht in range(w):
              intensidadPixel = arrayPixelesImagen[pixel]
-             Gnorm[height][widht] = modHistAcumulado(histAcumulado, intensidadPixel, nBins, h, w)
+             Gnorm[height][widht] = modHistAcumulado(histAcumulado, int(intensidadPixel), nBins, h, w)
              pixel += 1
     
-    return Gnorm
+    GnormNormalizado = adjustIntensity(Gnorm, [0, nBins], [0, 1])
+    return GnormNormalizado
 
-#FUNCIONES p2------------------------------
+################################################################################
+####################### FUCIONES FILTRADO ESPACIAL #############################
+################################################################################
 def es_lista_dos_dimensiones(lista):
     if isinstance(lista, list):
         # Verificar si al menos un elemento interno no es una lista
@@ -483,6 +494,16 @@ def gradientImage(inImage, operator):
 
     return gx, gy
 
+def buscarCrucePorCero(inImage, x, y, umbral):
+    for x2 in range(-1,1):
+        for y2 in range(-1,1):
+            if (x2 == y2):
+                continue
+            if (inImage[x+x2][y+y2] > umbral):
+                return 1
+            
+    return inImage[x][y]
+
 def LoG (inImage, sigma):
     # Convolucionar inImage con el kernel gausiano
     imgConvolGaussianKernel = gaussianFilter(inImage, sigma)
@@ -501,19 +522,131 @@ def LoG (inImage, sigma):
     # Sumar las dos derivadas segundas (gx2, gy2) en una unica imagen
     imageHeight, imageWidth = gx2.shape
 
-    imagenResultado = np.arange(0, imageHeight*imageWidth, 1, np.float64)
-    imagenResultado = np.reshape(imagenResultado, [imageHeight, imageWidth])
+    imagenUnica = np.arange(0, imageHeight*imageWidth, 1, np.float64)
+    imagenUnica = np.reshape(imagenUnica, [imageHeight, imageWidth])
 
 
     for x in range(imageHeight):
         for y in range(imageWidth):
-            imagenResultado[x][y] = gx2[x][y] + gy2[x][y]
+            imagenUnica[x][y] = gx2[x][y] + gy2[x][y]
+
+
+    # Buscar cruces por cero
+
+    paddedImage = np.pad(imagenUnica, 1, mode='constant', constant_values=0)
+
+    imagenResultado = np.arange(0, imageHeight*imageWidth, 1, np.float64)
+    imagenResultado = np.reshape(imagenResultado, [imageHeight, imageWidth])
+
+    umbral = 0.03
+    for x in range(imageHeight):
+        for y in range(imageWidth):
+            posY = y+1
+            posX = x+1
+            if (paddedImage[posX][posY] < umbral):
+                imagenResultado[x][y] = buscarCrucePorCero(paddedImage, posX, posY, umbral)
 
     return imagenResultado
 
-##############################################################
-##############################################################
-##############################################################
+def magnitud(inImage, inImageX, inImageY):
+    imageHeight, imageWidth = inImage.shape
+
+    imagenMagnitud = np.arange(0, imageHeight*imageWidth, 1, np.float64)
+    imagenMagnitud = np.reshape(imagenMagnitud, [imageHeight, imageWidth])
+     
+    for x in range(imageHeight):
+        for y in range(imageWidth):
+            imagenMagnitud[x][y] = math.sqrt(math.pow(inImageX[x][y], 2) + math.pow(inImageY[x][y], 2))
+    
+    return imagenMagnitud
+
+def orientacion(inImage, inImageX, inImageY):
+    imageHeight, imageWidth = inImage.shape
+
+    imagenOrientacion = np.arange(0, imageHeight*imageWidth, 1, np.float64)
+    imagenOrientacion = np.reshape(imagenOrientacion, [imageHeight, imageWidth])
+     
+    for x in range(imageHeight):
+        for y in range(imageWidth):
+            if (inImageX[x][y] == 0):
+                    imagenOrientacion[x][y] = 1
+            imagenOrientacion[x][y] = math.degrees(math.atan(inImageY[x][y]/inImageX[x][y]))
+    
+    return imagenOrientacion
+
+def supresionNoMaxima(inImageMagnitud, inImageOrientacion):
+    inImageMagnitudHeigth, inImageMagnitudWidth = inImageMagnitud.shape
+
+    imagenResultado = np.arange(0, inImageMagnitudHeigth*inImageMagnitudWidth, 1, np.float64)
+    imagenResultado = np.reshape(imagenResultado, [inImageMagnitudHeigth, inImageMagnitudWidth])
+
+    paddedImage = np.pad(inImageMagnitud, 1, mode='constant', constant_values=0)
+
+    for y in range(inImageMagnitudHeigth):
+        for x in range(inImageMagnitudWidth):
+            posY = y+1
+            posX = x+1
+
+            angulo = inImageOrientacion[y][x]
+
+            # Determinar los píxeles vecinos para cada direccion del gradiente
+            if (0 <= angulo < 22.5) or (157.5 <= angulo <= 180):
+                vecinos = [paddedImage[posY][posX-1], paddedImage[posY][posX+1]]
+            elif (22.5 <= angulo < 67.5):
+                vecinos = [paddedImage[posY-1][posX-1], paddedImage[posY+1][posX+1]]
+            elif (67.5 <= angulo < 112.5):
+                vecinos = [paddedImage[posY-1][posX], paddedImage[posY+1][posX]]
+            else:  # 112.5 <= angle < 157.5
+                vecinos = [paddedImage[posY-1][posX+1], paddedImage[posY+1][posX-1]]
+
+            # Comparar la intensidad del píxel actual con los vecinos a lo largo de la dirección del gradiente
+            if (paddedImage[posY][posX] < vecinos[0] or paddedImage[posY][posX] < vecinos[1]):
+                imagenResultado[y][x] = 0
+            else:
+                imagenResultado[y][x] = paddedImage[posY][posX]
+
+    return imagenResultado
+
+def umbralizacionHisteresis(image, low_threshold, high_threshold):
+    # Etapa 1: Aplicar umbral alto para identificar píxeles de borde fuertes
+    strong_edges = (image >= high_threshold)
+
+    # Etapa 2: Aplicar umbral bajo para identificar píxeles de borde débiles
+    weak_edges = (image >= low_threshold) & (image < high_threshold)
+
+    # Etapa 3: Conectar píxeles de borde fuertes y débiles para formar bordes continuos
+    result = np.zeros_like(image, dtype=np.float64)
+
+    for i in range(1, image.shape[0] - 1):
+        for j in range(1, image.shape[1] - 1):
+            if strong_edges[i, j]:
+                result[i, j] = 1
+            elif weak_edges[i, j] and np.any(strong_edges[i - 1:i + 2, j - 1:j + 2]):
+                result[i, j] = 1
+
+    return result
+
+def edgeCanny(inImage, sigma, tLow, tHigh):
+    # Suavizar imagen y eliminar ruido (Mejora de la imagen)
+    imagenSuavizada = gaussianFilter(inImage, sigma) # Suavizado gausiano
+    
+    # Localizar los bordes en la imagen mejorada (Mejora de la imagen)
+    imagenSuavizadaX, imagenSuavizadaY = gradientImage(imagenSuavizada, "Sobel") # Calcular las componentes del gradiente (Jx, Jy)
+    imagenMagnitud = magnitud(imagenSuavizada, imagenSuavizadaX, imagenSuavizadaY) # Calcular la magnitud de los bordes
+    imagenMagnitudNormalizada = adjustIntensity(imagenMagnitud, [], [])
+    imagenOrientacion = orientacion(imagenSuavizada, imagenSuavizadaX, imagenSuavizadaY) # Calcular la orientacion de los bordes (Grados)
+    
+    # Producir bordes de 1 pixel de grosor (Supresion no maxima)
+    imagenSuprimida = supresionNoMaxima(imagenMagnitudNormalizada, imagenOrientacion)
+
+    # Reducir la probabilidad de falsos contornos (Umbralizacion con histeresis)
+    imagenUmbralizada = umbralizacionHisteresis(imagenSuprimida, tLow, tHigh)
+    #imagenUmbralizada = filters.apply_hysteresis_threshold(imagenSuprimida, tLow, tHigh)
+    return imagenUmbralizada
+
+#################################################################################################
+#################### FUNCIONES PARA CREAR IMAGENES DE PRUEBA BINARIAS ###########################
+#################################################################################################
 def imagen_erode_1():
     tamY = 16
     tamX = 16
