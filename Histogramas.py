@@ -1,18 +1,19 @@
 from funciones import *
 
 #Lee la imagen
-imagenOriginalArray = readImageAsGrayscale('./images/FondoRojo.jpg')
+imagenOriginalArray = readImageAsGrayscale('./images/grays.png')
 print(imagenOriginalArray.shape)
 
 #Procesa la imagen
-imagenFinalEQArray = equalizeIntensity(imagenOriginalArray, nBins=256)
-imagenFinalArray = adjustIntensity(imagenOriginalArray,[0,1],[0.6,0.8])
+#imagenFinalEQArray = equalizeIntensity(imagenOriginalArray, nBins=256)
+imagenFinalArray = adjustIntensity(imagenOriginalArray,[],[])
 
 #Guarda e imprime las imagenes transformadas
-guardarArrayComoImagen(imagenFinalEQArray, "./images/ImagenModificada.jpg")
-guardarArrayComoImagen(imagenFinalArray, "./images/ImagenModificada2.jpg")
+#guardarArrayComoImagen(imagenFinalEQArray, "./images/ImagenModificada.jpg")
+#guardarArrayComoImagen(imagenFinalArray, "./images/ImagenModificada2.jpg")
+matplotlib.image.imsave("./images/ImagenModificada2.jpg", imagenFinalArray, cmap='gray', vmin=0, vmax=1)
 
-hacerPlot(imagenOriginalArray, imagenFinalEQArray, nBins=256)
+#hacerPlot(imagenOriginalArray, imagenFinalEQArray, nBins=256)
 
 plt.style.use('_mpl-gallery')
 

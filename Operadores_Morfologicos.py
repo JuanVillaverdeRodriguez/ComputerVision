@@ -1,6 +1,6 @@
 #OPERADORES MORFOLOGICOS
 from funciones import *
-
+'''
 imagenOriginal = imagen_erode_1()
 elementoEstructurante = crearEE([[1,1,1],[1,1,1],[1,1,1]])
 imagenModificada = erode(imagenOriginal, elementoEstructurante, center=[])
@@ -48,3 +48,13 @@ hacerPlot(imagenOriginal, imagenModificada1, nBins=256)
 hacerPlot(imagenOriginal, imagenModificada2, nBins=256)
 hacerPlot(imagenOriginal, imagenModificada3, nBins=256)
 hacerPlot(imagenOriginal, imagenModificada4, nBins=256)
+'''
+
+imagenOriginal = readImageAsGrayscale('./images/morph.png')
+imagenOriginal = (imagenOriginal > 0.5) *1 
+elementoEstructurante = crearEE([[1,0,0],[0,1,0],[0,0,0]])
+elementoEstructuranteFondo = crearEE([[0,1,0],[0,0,1],[0,0,0]])
+imagenModificada4 = hit_or_miss(imagenOriginal, elementoEstructurante, elementoEstructuranteFondo, center=[])
+#imagenModificada4 = erode(imagenOriginal, elementoEstructurante, center=[])
+hacerPlot(imagenOriginal, imagenModificada4, nBins=256)
+
